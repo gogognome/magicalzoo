@@ -5,9 +5,9 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 
-public class MagicalZooStraightForwardTest {
+public class MagicalZooOptimizedTest {
 
-	private final MagicalZooStraightForward magicalZoo = new MagicalZooStraightForward();
+	private final MagicalZooOptimized magicalZoo = new MagicalZooOptimized();
 
 	@Test
 	public void testMagicalZoo() {
@@ -25,6 +25,7 @@ public class MagicalZooStraightForwardTest {
 
 		assertArrayEquals(new int[] { 0, 0, 42 }, magicalZoo.maxRemainingNrAnimals(18, 20, 24));
 		assertArrayEquals(new int[] { 0, 0, 23 }, magicalZoo.maxRemainingNrAnimals(17, 55, 6));
+		assertArrayEquals(new int[] { 0, 0, 23 }, magicalZoo.maxRemainingNrAnimals(2055, 2006, 2017));
 	}
 
 }
