@@ -66,37 +66,49 @@ public class MagicalZooOptimized {
 			System.out.println("Nr animals: " + nrAnimals);
 			previousAnimals = currentAnimals;
 			currentAnimals = new HashMap<>();
-			for (int indexToIncrease=0; indexToIncrease<3; indexToIncrease++) {
-				for (Animals a : previousAnimals.values()) {
-					int[] newAnimals = Arrays.copyOf(a.getAnimals(), 3);
-					newAnimals[indexToIncrease]++;
-					put(currentAnimals, new Animals(newAnimals));
-				}
-			}
-
-			for (int indexToDecrease=0; indexToDecrease<3; indexToDecrease++) {
-				for (Animals a : previousAnimals.values()) {
-					if (a.getAnimals()[indexToDecrease] > 0) {
-						int[] newAnimals = Arrays.copyOf(a.getAnimals(), 3);
-						newAnimals[indexToDecrease]--;
-						for (int index=0; index<3; index++) {
-							if (index != indexToDecrease) {
-								newAnimals[index]++;
-							}
-						}
-						put(currentAnimals, new Animals(newAnimals));
-					}
-				}
-			}
-
-			for (Animals a : currentAnimals.values()) {
-				a.setMaxRemainingAnimals(calcMaxRemainingNrAnmials(a.getAnimals(), previousAnimals));
-			}
+			calculateCurrentAnimalsBasedOnPreviousAnimals(previousAnimals, currentAnimals);
 
 			nrAnimals++;
 		}
 
 		return currentAnimals.get(keyWeAreLookingFor).getMaxRemainingAnimals();
+	}
+
+	private void calculateCurrentAnimalsBasedOnPreviousAnimals(Map<String, Animals> previousAnimals, Map<String, Animals> currentAnimals) {
+		addOneAnimalToExistingAnimals(previousAnimals, currentAnimals);
+
+		addReversedEatings(previousAnimals, currentAnimals);
+
+		for (Animals animals : currentAnimals.values()) {
+			animals.setMaxRemainingAnimals(calcMaxRemainingNrAnmials(animals.getAnimals(), previousAnimals));
+		}
+	}
+
+	private void addReversedEatings(Map<String, Animals> previousAnimals, Map<String, Animals> currentAnimals) {
+		for (int indexToDecrease=0; indexToDecrease<3; indexToDecrease++) {
+			for (Animals animals : previousAnimals.values()) {
+				if (animals.getAnimals()[indexToDecrease] > 0) {
+					int[] newAnimals = Arrays.copyOf(animals.getAnimals(), 3);
+					newAnimals[indexToDecrease]--;
+					for (int index=0; index<3; index++) {
+						if (index != indexToDecrease) {
+							newAnimals[index]++;
+						}
+					}
+					put(currentAnimals, new Animals(newAnimals));
+				}
+			}
+		}
+	}
+
+	private void addOneAnimalToExistingAnimals(Map<String, Animals> previousAnimals, Map<String, Animals> currentAnimals) {
+		for (int indexToIncrease=0; indexToIncrease<3; indexToIncrease++) {
+			for (Animals a : previousAnimals.values()) {
+				int[] newAnimals = Arrays.copyOf(a.getAnimals(), 3);
+				newAnimals[indexToIncrease]++;
+				put(currentAnimals, new Animals(newAnimals));
+			}
+		}
 	}
 
 	private void put(Map<String, Animals> map, Animals animals) {
