@@ -1,158 +1,43 @@
 package magicalzoo;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class MagicalZooOptimized {
 
-	private static class Animals {
-		private final String key;
-		private final int[] animals;
-		private int[] maxRemainingAnimals;
-
-		public Animals(int[] animals) {
-			this.animals = animals;
-			this.key = Arrays.toString(animals);
-		}
-
-		public String getKey() {
-			return key;
-		}
-
-		public int[] getAnimals() {
-			return animals;
-		}
-
-		public int[] getMaxRemainingAnimals() {
-			return maxRemainingAnimals;
-		}
-
-		public void setMaxRemainingAnimals(int[] maxRemainingAnimals) {
-			this.maxRemainingAnimals = maxRemainingAnimals;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (obj instanceof Animals) {
-				Animals that = (Animals) obj;
-				return this.getKey().equals(that.getKey());
-			}
-			return false;
-		}
-
-		@Override
-		public int hashCode() {
-			return key.hashCode();
-		}
-	}
-
 	public int[] maxRemainingNrAnimals(int... animals) {
-
-		String keyWeAreLookingFor = new Animals(animals).getKey();
-
-		Map<String, Animals> previousAnimals = new HashMap<>();
-		Map<String, Animals> currentAnimals = new HashMap<>();
-		for (int i=0; i<3; i++) {
-			int[] singleAnimal = new int[3];
-			singleAnimal[i] = 1;
-			Animals tempAnimals = new Animals(singleAnimal);
-			tempAnimals.setMaxRemainingAnimals(singleAnimal);
-			put(currentAnimals, tempAnimals);
-		}
-
-		int nrAnimals = 1;
-		while (!currentAnimals.containsKey(keyWeAreLookingFor)) {
-			System.out.println("Nr animals: " + nrAnimals);
-			previousAnimals = currentAnimals;
-			currentAnimals = new HashMap<>();
-			calculateCurrentAnimalsBasedOnPreviousAnimals(previousAnimals, currentAnimals);
-
-			nrAnimals++;
-		}
-
-		return currentAnimals.get(keyWeAreLookingFor).getMaxRemainingAnimals();
-	}
-
-	private void calculateCurrentAnimalsBasedOnPreviousAnimals(Map<String, Animals> previousAnimals, Map<String, Animals> currentAnimals) {
-		addOneAnimalToExistingAnimals(previousAnimals, currentAnimals);
-
-		addReversedEatings(previousAnimals, currentAnimals);
-
-		for (Animals animals : currentAnimals.values()) {
-			animals.setMaxRemainingAnimals(calcMaxRemainingNrAnmials(animals.getAnimals(), previousAnimals));
-		}
-	}
-
-	private void addReversedEatings(Map<String, Animals> previousAnimals, Map<String, Animals> currentAnimals) {
-		for (int indexToDecrease=0; indexToDecrease<3; indexToDecrease++) {
-			for (Animals animals : previousAnimals.values()) {
-				if (animals.getAnimals()[indexToDecrease] > 0) {
-					int[] newAnimals = Arrays.copyOf(animals.getAnimals(), 3);
-					newAnimals[indexToDecrease]--;
-					for (int index=0; index<3; index++) {
-						if (index != indexToDecrease) {
-							newAnimals[index]++;
-						}
-					}
-					put(currentAnimals, new Animals(newAnimals));
-				}
-			}
-		}
-	}
-
-	private void addOneAnimalToExistingAnimals(Map<String, Animals> previousAnimals, Map<String, Animals> currentAnimals) {
-		for (int indexToIncrease=0; indexToIncrease<3; indexToIncrease++) {
-			for (Animals a : previousAnimals.values()) {
-				int[] newAnimals = Arrays.copyOf(a.getAnimals(), 3);
-				newAnimals[indexToIncrease]++;
-				put(currentAnimals, new Animals(newAnimals));
-			}
-		}
-	}
-
-	private void put(Map<String, Animals> map, Animals animals) {
-		map.put(animals.getKey(), animals);
-	}
-
-	private int[] calcMaxRemainingNrAnmials(int[] animals, Map<String, Animals> previousAnimals) {
-		if (oneKindOfAnimalLeft(animals)) {
-			return animals;
-		}
-
-		int[] maxRemaining = new int[] { 0, 0, 0 };
-		for (int i=0; i<animals.length; i++) {
-			int[] newAnimals = createAnimalUsingOthers(animals, i);
-			if (newAnimals != null) {
-				int[] newMaxRemainingAnimals = previousAnimals.get(Arrays.toString(newAnimals)).getMaxRemainingAnimals();
-				if (sum(newMaxRemainingAnimals) > sum(maxRemaining)) {
-					maxRemaining = newMaxRemainingAnimals;
-				}
+		List<Integer> odd = new ArrayList<>();
+		List<Integer> even = new ArrayList<>();
+		for (int n : animals) {
+			if (n % 2 == 0) {
+				even.add(n);
+			} else {
+				odd.add(n);
 			}
 		}
 
-		return maxRemaining;
-	}
+		List<Integer> majority = even.size() > odd.size() ? even : odd;
+		List<Integer> minority = even.size() > odd.size() ? odd : even;
 
-	private boolean oneKindOfAnimalLeft(int[] animals) {
-		return Arrays.stream(animals).filter(n -> n > 0).count() == 1;
-	}
-
-	private int sum(int[] animals) {
-		return Arrays.stream(animals).sum();
-	}
-
-	private int[] createAnimalUsingOthers(int[] animals, int newAnimal) {
-		for (int i=0; i<animals.length; i++) {
-			if (i != newAnimal && animals[i] == 0) {
-				return null;
+		Collections.sort(majority);
+		int indexWithSmallestValueInMajority = -1;
+		for (int index=0; index<3; index++) {
+			if (animals[index] == majority.get(0)) {
+				indexWithSmallestValueInMajority = index;
 			}
 		}
 
-		int[] newAnimals = new int[animals.length];
-		for (int i=0; i<animals.length; i++) {
-			newAnimals[i] = animals[i] + (i == newAnimal ? 1 : -1);
+		int valueOfWinner = majority.size() == 3 ? majority.get(2) : minority.get(0);
+		int indexOfWinner = -1;
+		for (int index=2; index>=0; index--) {
+			if (animals[index] == valueOfWinner) {
+				indexOfWinner = index;
+			}
 		}
-		return newAnimals;
+
+		int[] result = new int[3];
+		result[indexOfWinner] = animals[indexOfWinner] + animals[indexWithSmallestValueInMajority];
+		return result;
 	}
 }
